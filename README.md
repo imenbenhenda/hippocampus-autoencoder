@@ -16,6 +16,18 @@ This project implements a **3D convolutional autoencoder** in Python to detect a
 - Decision: **Normal** or **Anomaly detected** based on the threshold.
 
 ---
+## Dataset pour le projet
+
+Pour ce projet, je recommande d'utiliser le **Medical Decathlon – Task 04 Hippocampus** car :
+
+- Téléchargement direct (pas besoin de compte compliqué).  
+- Les hippocampes sont déjà segmentés.  
+- Petit dataset (~1 Go).  
+- Permet de tester rapidement un autoencodeur 3D.  
+
+### Lien direct pour télécharger le dataset
+📥 [Download Medical Decathlon Hippocampus Dataset](http://medicaldecathlon.com/files/Task04_Hippocampus.zip)
+
 
 ## Project Structure
 
