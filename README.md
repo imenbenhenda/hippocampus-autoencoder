@@ -53,7 +53,6 @@ The script will:
   - Display slice-wise visualizations.
   - Print the decision: ✅ Normal or ❌ Anomaly detected.
 
-<<<<<<< HEAD
 =======
 Example Output :
 Seuil d'anomalie calculé automatiquement: 0.064310
@@ -61,4 +60,4 @@ Seuil d'anomalie calculé automatiquement: 0.064310
 Score d’anomalie moyen: 0.045151
 Score d’anomalie maximal: 0.703641
 ✅ Volume normal
->>>>>>> 8de5c27a2614c86b15bf0c98566e3e78017fa080
+
