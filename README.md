@@ -53,11 +53,11 @@ The script will:
   - Display slice-wise visualizations.
   - Print the decision: ✅ Normal or ❌ Anomaly detected.
 
-=======
+
 Example Output :
-Seuil d'anomalie calculé automatiquement: 0.064310
---- Traitement de hippocampus_002.nii.gz ---
-Score d’anomalie moyen: 0.045151
-Score d’anomalie maximal: 0.703641
+- Seuil d'anomalie calculé automatiquement: 0.064310
+- Traitement de hippocampus_002.nii.gz ---
+- Score d’anomalie moyen: 0.045151
+- Score d’anomalie maximal: 0.703641
 ✅ Volume normal
 
