@@ -16,6 +16,9 @@ This project implements a **3D convolutional autoencoder** in Python to detect a
 - Decision: **Normal** or **Anomaly detected** based on the threshold.
 
 ---
+## Dataset pour le projet
+📥 [Download Medical Decathlon Hippocampus Dataset](http://medicaldecathlon.com/files/Task04_Hippocampus.zip)
+
 
 ## Project Structure
 ```
@@ -50,3 +53,12 @@ The script will:
   - Display slice-wise visualizations.
   - Print the decision: ✅ Normal or ❌ Anomaly detected.
 
+<<<<<<< HEAD
+=======
+Example Output :
+Seuil d'anomalie calculé automatiquement: 0.064310
+--- Traitement de hippocampus_002.nii.gz ---
+Score d’anomalie moyen: 0.045151
+Score d’anomalie maximal: 0.703641
+✅ Volume normal
+>>>>>>> 8de5c27a2614c86b15bf0c98566e3e78017fa080
