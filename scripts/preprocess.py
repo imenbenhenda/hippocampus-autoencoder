@@ -1,57 +1,48 @@
-"""
-preprocess.py
-Script pour prétraiter les volumes IRM hippocampe pour l'autoencodeur 3D
-- Normalisation des intensités
-- Resize / recadrage à une dimension fixe
-- (Optionnel) Extraction de l'hippocampe via le masque
-- Création de tensors PyTorch X_train et Y_train
-"""
-
-import os                     # Pour naviguer dans les dossiers et fichiers
-import nibabel as nib          # Pour lire les fichiers IRM au format .nii.gz
-import numpy as np            # Pour manipuler les tableaux / volumes 3D
-from scipy.ndimage import zoom  # Pour redimensionner les volumes 3D
-import torch                  # Pour créer les tensors PyTorch pour l'entraînement
+import os                     
+import nibabel as nib          
+import numpy as np            
+from scipy.ndimage import zoom  
+import torch                  
 
 # -----------------------------
-# Paramètres
+# Parameters
 # -----------------------------
-DATA_PATH = "../data/Hippocampus_Dataset/train"  # chemin vers le dossier train
-TRAIN_IMAGES = "images/imagesTr"                 # sous-dossier contenant les IRM
-TRAIN_LABELS = "labels/labelsTr"                # sous-dossier contenant les masques
+DATA_PATH = "../data/Hippocampus_Dataset/train"  
+TRAIN_IMAGES = "images/imagesTr"                 
+TRAIN_LABELS = "labels/labelsTr"              
 
-TARGET_SHAPE = (64, 64, 64)  # taille cible des volumes pour le modèle
-USE_HIPPOCAMPUS_ONLY = True   # True si on veut ne garder que l'hippocampe
+TARGET_SHAPE = (64, 64, 64)  
+USE_HIPPOCAMPUS_ONLY = True   
 
 # -----------------------------
-# Fonctions
+# Functions
 # -----------------------------
 
 def normalize_volume(volume):
     """
-    Normalisation des intensités du volume entre 0 et 1
+    Normalize volume intensities between 0 and 1
     """
-    vol = volume.astype(np.float32)  # convertir en float32 pour plus de précision
-    return (vol - vol.min()) / (vol.max() - vol.min() + 1e-8)  # +1e-8 pour éviter division par zéro
+    vol = volume.astype(np.float32)  
+    return (vol - vol.min()) / (vol.max() - vol.min() + 1e-8) 
 
 def resize_volume(volume, target_shape=TARGET_SHAPE):
     """
-    Redimensionner le volume pour qu'il ait la même taille que target_shape
+    Resize volume to match target_shape size
     """
-    # Calcul du facteur de zoom pour chaque dimension
+    # Calculate zoom factor for each dimension
     factors = [t / s for t, s in zip(target_shape, volume.shape)]
-    return zoom(volume, factors, order=1)  # interpolation linéaire pour redimensionner
+    return zoom(volume, factors, order=1) 
 
 def crop_to_hippocampus(volume, mask):
     """
-    Recadrer le volume et le masque sur la région de l'hippocampe uniquement
+    Crop volume and mask to hippocampus region only
     """
-    coords = np.array(np.nonzero(mask))  # positions des voxels où le masque != 0
-    if coords.size == 0:  # si le masque est vide, retourner le volume entier
+    coords = np.array(np.nonzero(mask))  
+    if coords.size == 0:  
         return volume, mask
-    min_coords = coords.min(axis=1)  # coordonnée min de l'hippocampe
-    max_coords = coords.max(axis=1) + 1  # coordonnée max (+1 pour inclure le dernier voxel)
-    # Retourne le volume et le masque recadrés
+    min_coords = coords.min(axis=1)  
+    max_coords = coords.max(axis=1) + 1 
+    
     return (volume[min_coords[0]:max_coords[0],
                    min_coords[1]:max_coords[1],
                    min_coords[2]:max_coords[2]],
@@ -60,51 +51,49 @@ def crop_to_hippocampus(volume, mask):
                  min_coords[2]:max_coords[2]])
 
 # -----------------------------
-# Chargement et prétraitement
+# Loading and preprocessing
 # -----------------------------
 
-# Lister uniquement les fichiers .nii.gz pour éviter les fichiers cachés
 image_files = sorted([f for f in os.listdir(os.path.join(DATA_PATH, TRAIN_IMAGES)) if f.endswith(".nii.gz")])
 label_files = sorted([f for f in os.listdir(os.path.join(DATA_PATH, TRAIN_LABELS)) if f.endswith(".nii.gz")])
 
-# Listes pour stocker tous les volumes prétraités
-X_train = []  # IRM
-Y_train = []  # masques correspondants
+X_train = []  
+Y_train = [] 
 
-# Boucle sur chaque paire image/masque
+
 for img_file, lbl_file in zip(image_files, label_files):
-    # Construire les chemins complets
+    # Build full paths
     img_path = os.path.join(DATA_PATH, TRAIN_IMAGES, img_file)
     lbl_path = os.path.join(DATA_PATH, TRAIN_LABELS, lbl_file)
     
-    # Charger les volumes IRM et masques
+    # Load MRI volumes and masks
     img = nib.load(img_path).get_fdata()
     lbl = nib.load(lbl_path).get_fdata()
     
-    # Normaliser les intensités de l'IRM
+    # Normalize MRI intensities
     img = normalize_volume(img)
     
-    # Recadrer sur l'hippocampe si demandé
+    # Crop to hippocampus if requested
     if USE_HIPPOCAMPUS_ONLY:
         img, lbl = crop_to_hippocampus(img, lbl)
     
-    # Redimensionner pour tous les volumes à TARGET_SHAPE
+    # Resize all volumes to TARGET_SHAPE
     img = resize_volume(img, TARGET_SHAPE)
     lbl = resize_volume(lbl, TARGET_SHAPE)
     
-    # Ajouter la dimension canal (PyTorch attend [canal, x, y, z])
+    # Add channel dimension 
     img = np.expand_dims(img, axis=0)
     lbl = np.expand_dims(lbl, axis=0)
     
-    # Ajouter les volumes prétraités aux listes
+    # Add preprocessed volumes to lists
     X_train.append(img)
     Y_train.append(lbl)
 
-# Convertir les listes en tensors PyTorch
+# Convert lists to PyTorch tensors
 X_train_tensor = torch.tensor(np.stack(X_train), dtype=torch.float32)
 Y_train_tensor = torch.tensor(np.stack(Y_train), dtype=torch.float32)
 
-# Afficher la forme finale pour vérification
+# Display final shape for verification
 print("X_train shape:", X_train_tensor.shape)  # (nb_volumes, 1, 64, 64, 64)
 print("Y_train shape:", Y_train_tensor.shape)
-print("Prétraitement terminé !")
+print("Preprocessing completed!")
